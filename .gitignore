@@ -1,0 +1,6 @@
+# vim swapfiles
+*.swp
+
+# binaries
+*.o
+usbtest
