@@ -4,3 +4,4 @@
 # binaries
 *.o
 usbtest/usbtest
+abtest/abtest
