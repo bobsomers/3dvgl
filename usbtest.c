@@ -19,6 +19,9 @@
 // shutter wait time, in nanoseconds
 #define SHUTTER_TIME 8333333
 
+// number of shutter packets between each sync packet
+#define SHUTTERS_PER_SYNC 14
+
 // number of shutter packets to burst before starting to allow
 // the glasses to recover the refresh frequency
 #define FREQ_RECOVERY_PACKETS 32
@@ -55,7 +58,7 @@ void goodbye(int sig) {
 }
 
 void shutter(libusb_device_handle *devh) {
-    unsigned char shutter_packet[] = {0xAA, 0xFF, 0x00, 0x00,
+    unsigned char shutter_packet[] = {0xAA, 0xFE, 0x00, 0x00,
                                       0x00, 0x00, 0xFF, 0xFF};
     unsigned char sync_packet[] = {0x42, 0x18, 0x03, 0x00};
 
@@ -67,12 +70,16 @@ void shutter(libusb_device_handle *devh) {
     int frame_count = 0;
     int bytes_sent = 0;
     int err = 0;
-    int left_right = 0;
-    int initial = 32;
+    int left_right = 1;
+    int initial = FREQ_RECOVERY_PACKETS;
             
     // bang!
     clock_gettime(CLOCK_MONOTONIC, &shutter_start);
     fps_start = shutter_start;
+            
+    // send out a sync packet
+    err = libusb_bulk_transfer(devh, NVIDIA_CONTROL_EP, sync_packet, 4, &bytes_sent, TIMEOUT_MS);
+    if ((err != LIBUSB_SUCCESS) || (bytes_sent < 4)) bomb(err, "libusb_bulk_transfer() [sync packet]");
     
     while (running) {
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -80,16 +87,20 @@ void shutter(libusb_device_handle *devh) {
         if (nanotime_diff(shutter_start, now).tv_nsec > SHUTTER_TIME) {
             shutter_start = now;
             frame_count++;
-            shutter_count++;
+            if (initial > 0) {
+                initial--;
+            } else {
+                shutter_count++;
+            }
 
             // send out a shutter packet
-            shutter_packet[1] = 0xFE | left_right;
+            if (initial <= 0) shutter_packet[1] = 0xFE | left_right;
             err = libusb_bulk_transfer(devh, NVIDIA_SYNC_EP, shutter_packet, 8, &bytes_sent, TIMEOUT_MS);
             if ((err != LIBUSB_SUCCESS) || (bytes_sent < 8)) bomb(err, "libusb_bulk_transfer() [shutter packet]");
             left_right = !left_right;
         }
 
-        if (shutter_count >= 14) {
+        if (shutter_count >= SHUTTERS_PER_SYNC && initial <= 0) {
             shutter_count = 0;
 
             // send out a sync packet
