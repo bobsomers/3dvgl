@@ -1,0 +1,10 @@
+Environment variable __GL_SYNC_TO_VBLANK set to non-zero should force
+SwapBuffers to sync to the monitors vertical refresh rate.
+
+In nvidia-settings...
+
+Select the DFP display under the GPU, and disable Force Full GPU Scaling.
+It *must* be disabled for you to go higher than 60 Hz. Next, go back to the
+X Server Display Configuration Tab and select a specific resolution and
+120 Hz refresh rate. Run nvidia-settings as root to save it to xorg.conf.
+Run glxgears with vsync on to verify.
