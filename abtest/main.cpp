@@ -1,34 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <time.h>
-#include <signal.h>
-
-#include <GL/freeglut.h>
-#include <libusb-1.0/libusb.h>
-
-// usb configuration for NVIDIA 3D Vision stereo IR transmitter
-#define NVIDIA_VID 0x955
-#define NVIDIA_PID 0x7
-#define NVIDIA_INTERFACE 0x0
-#define NVIDIA_CONFIGURATION 0x1
-#define NVIDIA_CONTROL_EP 0x2
-#define NVIDIA_SYNC_EP 0x1
-
-// usb timeout in milliseconds
-#define TIMEOUT_MS 5000
-
-// shutter wait time, in nanoseconds
-#define SHUTTER_TIME 8333333
-
-// number of shutter packets between each sync packet
-#define SHUTTERS_PER_SYNC 14
-
-// number of shutter packets to burst before starting to allow
-// the glasses to recover the refresh frequency
-#define FREQ_RECOVERY_PACKETS 32
-
-typedef struct timespec timespec;
+#include "main.h"
 
 // window width and height
 int GW = 800;

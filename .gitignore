@@ -3,5 +3,10 @@
 
 # binaries
 *.o
-usbtest/usbtest
-abtest/abtest
+Release
+Debug
+
+# codelite files
+*.workspace.session
+*.mk
+*.tags
