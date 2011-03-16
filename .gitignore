@@ -3,10 +3,5 @@
 
 # binaries
 *.o
-Release
-Debug
-
-# codelite files
-*.workspace.session
-*.mk
-*.tags
+*.a
+3dvgl

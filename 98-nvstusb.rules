@@ -1,0 +1,2 @@
+# NVIDIA 3D Vision USB IR Emitter
+SUBSYSTEM=="usb", ATTR{idVendor}=="0955", ATTR{idProduct}=="0007", MODE="0666"

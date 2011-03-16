@@ -1,5 +1,23 @@
-Environment variable __GL_SYNC_TO_VBLANK set to non-zero should force
-SwapBuffers to sync to the monitors vertical refresh rate.
+1) Verify that OpenGL vsync is on and that the refresh rate is correctly set to
+120 Hz.
+
+2) Verify that you are not using any special window compositor (i.e. Compiz).
+You must use the default (Metacity).
+
+3) The USB emitter device must have permissions that grant regular users write
+access, otherwise you'll need to run your program as root. (Admistrators can
+configure this by copying the 98-nvstusb.rules file into /etc/udev/rules.d/
+
+4) Ensure that you have the USB emitter firmware (nvstusb.fw) in your current
+working directory (probably the same as your executable).
+
+
+Requires:
+    libusb-1.0
+
+
+
+=====
 
 In nvidia-settings...
 
