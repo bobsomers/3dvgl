@@ -4,7 +4,7 @@
 #include <GL/glut.h>
 
 extern "C" {
-    #include "nvstusb/nvstusb.h"
+    #include "nvstusb.h"
 }
 
 #include "stereo_helper.h"

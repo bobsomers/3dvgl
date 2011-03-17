@@ -1,11 +1,9 @@
 SRC = usb_libusb.c nvstusb.c
 OBJ = $(SRC:.c=.o)
-OUT = ../../libnvstusb.a
-
-INCLUDES = -I/usr/include/libusb-1.0
+OUT = libnvstusb.a
 
 CC = gcc
-CFLAGS = -O2 -g $(INCLUDES)
+CFLAGS = -O2 -g
 
 all: $(OUT)
 

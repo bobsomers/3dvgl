@@ -3,7 +3,7 @@ OBJ = $(SRC:.cpp=.o)
 OUT = 3dvgl
 
 INCLUDES = -Isrc \
-		   -Iinclude
+		   -Ilib
 
 LIBS = -Llib \
 	   -lnvstusb \
@@ -36,7 +36,7 @@ lib/libnvstusb.a:
 	@echo "============================================================"
 	@echo "    Building libnvstusb from source..."
 	@echo "============================================================"
-	make -C lib/src/nvstusb
+	make -C lib
 	@echo ""
 	@echo "============================================================"
 	@echo "    Building demo application..."
@@ -46,4 +46,5 @@ lib/libnvstusb.a:
 	$(CXX) -c $(CFLAGS) -o $@ $<
 
 clean:
+	make -C lib clean
 	rm -f $(OUT) $(OBJ) lib/libnvstusb.a

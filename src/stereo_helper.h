@@ -4,7 +4,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/xf86vmode.h>
 
-#include "nvstusb/nvstusb.h"
+#include "nvstusb.h"
 
 // makes sure that the nvstusb refresh rate is in sync with what X11 thinks it
 // is
