@@ -9,6 +9,7 @@ extern "C" {
 
 #include "scene.h"
 #include "stereo_helper.h"
+#include "screenshot.h"
 
 // global width and height of the window
 int GW = 800;
@@ -20,18 +21,40 @@ struct nvstusb_context *nv_ctx = NULL;
 // 3D camera from stereo helper
 StereoHelper::Camera cam;
 
+// forces a particular eye to be displayed (for debugging)
+// 0 = normal swapping, 1 = left always, 2 = right always
+int force_eye = 0;
+
+// controls whether or not the pulsar is rotating
+bool rotation = true;
+
 void draw(int eye) {
-    static float rotation = 0.0f;
+    static float angle = 0.0f;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
+    int show = 0;
+    switch (force_eye) {
+        case 0:
+            show = eye;
+            break;
+        
+        case 1:
+            show = 1;
+            break;
+            
+        case 2:
+            show = 0;
+            break;
+    }
+    
     // do the camera projection
-    StereoHelper::ProjectCamera(cam, (float)GW / GH, eye);
+    StereoHelper::ProjectCamera(cam, (float)GW / GH, show);
     
     // draw Paul Bourke's test scene "pulsar"
-    rotation += 1.0f;
+    if (rotation) angle += 1.0f;
     PaulBourke::MakeLighting();
-    PaulBourke::MakeGeometry(rotation);
+    PaulBourke::MakeGeometry(angle);
 }
 
 void idle() {
@@ -51,9 +74,24 @@ void idle() {
     struct nvstusb_keys k;
     nvstusb_get_keys(nv_ctx, &k);
     
-    if (k.toggled3D) printf("TOGGLE!\n");
-    if (k.deltaWheel != 0) printf("DELTA WHEEL %d\n", k.deltaWheel);
-    if (k.pressedDeltaWheel != 0) printf("PRESSED DELTA WHEEL %d\n", k.pressedDeltaWheel);
+    // the 3D button on the IR emitter controls toggling the rotation on and
+    // off
+    if (k.toggled3D) {
+        rotation = !rotation;
+        printf("Toggled rotation.\n");
+    }
+    
+    // the wheel on the back adjusts the focal length of the camera (and
+    // interoccular distance, since we want to maintain IOD = 1/30th of the
+    // focal length)
+    if (k.deltaWheel != 0) {
+        cam.focal += k.deltaWheel;
+        cam.iod = cam.focal / 30.0f;
+        printf("Set camera focal length to %f.\n", cam.focal);
+    }
+    
+    // you can also use k.pressedDeltaWheel, which reports the amount the wheel
+    // moves while the 3D button is pressed
 }
 
 void keyboard(unsigned char key, int x, int y) {
@@ -70,6 +108,23 @@ void keyboard(unsigned char key, int x, int y) {
                 cam.type = StereoHelper::TOE_IN;
                 printf("Using toe-in stereo camera.\n");
             }
+            break;
+            
+        case 'f': case 'F': // force eye
+            force_eye = (force_eye + 1) % 3;
+            if (force_eye == 0) {
+                printf("Swapping eyes normally.\n");
+            } else if (force_eye == 1) {
+                printf("Forcing left eye always.\n");
+            } else {
+                printf("Forcing right eye always.\n");
+            }
+            break;
+            
+        case 's': case 'S': // take screenshot
+            Screenshot::Screenshot(0, 0, GW, GH, "screenshot.tga");
+            printf("Wrote frame buffer to screenshot.tga.\n");
+            break;
     }
 }
 
@@ -112,6 +167,7 @@ int main(int argc, char *argv[]) {
     glShadeModel(GL_SMOOTH);
     glEnable(GL_COLOR_MATERIAL);
     glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
+    Screenshot::Init();
     
     // set up our 3D camera (see stereohelper.h for more documentation)
     cam.type = StereoHelper::PARALLEL_AXIS_ASYMMETRIC;

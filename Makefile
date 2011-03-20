@@ -1,4 +1,4 @@
-SRC = src/main.cpp src/scene.cpp
+SRC = src/main.cpp src/scene.cpp src/screenshot.cpp
 OBJ = $(SRC:.cpp=.o)
 OUT = 3dvgl
 
