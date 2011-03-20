@@ -1,5 +1,8 @@
 1) Verify that OpenGL vsync is on and that the refresh rate is correctly set to
-120 Hz.
+120 Hz. Sometimes it stays at 60 Hz until you open the NVIDIA settings
+(System > Preferences > NVIDIA X Server Settings), at which point it pops up
+to 120 Hz. If you have vsync on you can run glxgears to verify the refresh
+rate.
 
 2) Verify that you are not using any special window compositor (i.e. Compiz).
 You must use the default (Metacity).
