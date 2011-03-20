@@ -7,6 +7,7 @@ extern "C" {
     #include "nvstusb.h"
 }
 
+#include "scene.h"
 #include "stereo_helper.h"
 
 // global width and height of the window
@@ -16,32 +17,26 @@ int GH = 600;
 // context for dealing with the stereo usb IR emitter
 struct nvstusb_context *nv_ctx = NULL;
 
+// 3D camera from stereo helper
+StereoHelper::Camera cam;
+
 void draw(int eye) {
+    static float rotation = 0.0f;
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    glBegin(GL_QUADS);
-    if (eye) { // left eye
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glVertex2f(-1.0f, -1.0f);
-        glVertex2f(0.0f, -1.0f);
-        glVertex2f(0.0f, 1.0f);
-        glVertex2f(-1.0f, 1.0f);
-        
-    } else { // right eye
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glVertex2f(0.0f, -1.0f);
-        glVertex2f(1.0f, -1.0f);
-        glVertex2f(1.0f, 1.0f);
-        glVertex2f(0.0f, 1.0f);
-    }
-    glEnd();
+    // do the camera projection
+    StereoHelper::ProjectCamera(cam, (float)GW / GH, eye);
+    
+    // draw Paul Bourke's test scene "pulsar"
+    rotation += 1.0f;
+    PaulBourke::MakeLighting();
+    PaulBourke::MakeGeometry(rotation);
 }
 
 void idle() {
     // which eye are we on? (1/0 for left/right)
     static int current_eye = 0;
-    
-    // TODO: updates 'n shit
  
     // draw the frame for the current eye
     draw(current_eye);
@@ -66,6 +61,15 @@ void keyboard(unsigned char key, int x, int y) {
         case 'q': case 'Q':
             exit(EXIT_SUCCESS);
             break;
+            
+        case 'c': case 'C': // switch camera type
+            if (cam.type == StereoHelper::TOE_IN) {
+                cam.type = StereoHelper::PARALLEL_AXIS_ASYMMETRIC;
+                printf("Using parallel axis asymmetric frusta camera.\n");
+            } else {
+                cam.type = StereoHelper::TOE_IN;
+                printf("Using toe-in stereo camera.\n");
+            }
     }
 }
 
@@ -90,7 +94,7 @@ int main(int argc, char *argv[]) {
     }
     
     // auto-config the vsync rate
-    stereo_helper_config_refresh_rate(nv_ctx);
+    StereoHelper::ConfigRefreshRate(nv_ctx);
     
     // create glut windows
     glutInitWindowSize(GW, GH);
@@ -104,6 +108,21 @@ int main(int argc, char *argv[]) {
  
     // set up opengl state
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glEnable(GL_DEPTH_TEST);
+    glShadeModel(GL_SMOOTH);
+    glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
+    
+    // set up our 3D camera (see stereohelper.h for more documentation)
+    cam.type = StereoHelper::PARALLEL_AXIS_ASYMMETRIC;
+    cam.eye = StereoHelper::Vec3(39.0f, 53.0f, 22.0f);
+    cam.look = StereoHelper::Vec3(0.0f, 0.0f, 0.0f);
+    cam.up = StereoHelper::Vec3(0.0f, 1.0f, 0.0f);
+    cam.focal = 70.0f;
+    cam.fov = 50.0f;
+    cam.iod = cam.focal / 30.0f;
+    cam.near = 1.0f;
+    cam.far = 200.0f;
     
     // off we go!
     glutMainLoop();
