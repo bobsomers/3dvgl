@@ -15,9 +15,9 @@ LIBS = -Llib \
 	   -lpthread \
 	   -lusb-1.0
 
-CXX = g++
-CFLAGS = -Wall -O2 -g $(INCLUDES)
-LDFLAGS = $(LIBS) 
+CXX ?= g++
+CXXFLAGS ?= -Wall -O2 -g
+CPPFLAGS += $(INCLUDES)
 
 all: $(OUT)
 
@@ -26,7 +26,7 @@ $(OUT): lib/libnvstusb.a $(OBJ)
 	@echo "============================================================"
 	@echo "    Linking..."
 	@echo "============================================================"
-	$(CXX) -o $@ $(OBJ) $(LDFLAGS)
+	$(CXX) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	@echo ""
 	@echo "============================================================"
 	@echo "    Done."
@@ -43,7 +43,7 @@ lib/libnvstusb.a:
 	@echo "============================================================"
 
 .cpp.o:
-	$(CXX) -c $(CFLAGS) -o $@ $<
+	$(CXX) $(CPPFLAGS) -c $(CXXFLAGS) -o $@ $<
 
 clean:
 	make -C lib clean
