@@ -2,8 +2,8 @@ SRC = usb_libusb.c nvstusb.c
 OBJ = $(SRC:.c=.o)
 OUT = libnvstusb.a
 
-CC = gcc
-CFLAGS = -O2 -g
+CC ?= gcc
+CFLAGS ?= -O2 -g
 
 all: $(OUT)
 
